@@ -1,18 +1,12 @@
 # This is my package backpack-monitored-scheduled-tasks
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/vendor_slug/package_slug.svg?style=flat-square)](https://packagist.org/packages/vendor_slug/package_slug)
-[![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/vendor_slug/package_slug/run-tests?label=tests)](https://github.com/vendor_slug/package_slug/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/workflow/status/vendor_slug/package_slug/Check%20&%20fix%20styling?label=code%20style)](https://github.com/vendor_slug/package_slug/actions?query=workflow%3A"Check+%26+fix+styling"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/vendor_slug/package_slug.svg?style=flat-square)](https://packagist.org/packages/vendor_slug/package_slug)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/pentangle/backpack-monitored-scheduled-tasks.svg?style=flat-square)](https://packagist.org/packages/pentangle/backpack-monitored-scheduled-tasks)
 
----
-This repo can be used to scaffold a Laravel package. Follow these steps to get started:
+[comment]: <> ([![GitHub Tests Action Status]&#40;https://img.shields.io/github/workflow/status/pentangle/backpack-monitored-scheduled-tasks/run-tests?label=tests&#41;]&#40;https://github.com/pentangle/backpack-monitored-scheduled-tasks/actions?query=workflow%3Arun-tests+branch%3Amain&#41;)
 
-1. Press the "Use template" button at the top of this repo to create a new repo with the contents of this skeleton
-2. Run "php ./configure.php" to run a script that will replace all placeholders throughout all the files
-3. Remove this block of text.
-4. Have fun creating your package.
-5. If you need help creating a package, consider picking up our <a href="https://laravelpackage.training">Laravel Package Training</a> video course.
+[comment]: <> ([![GitHub Code Style Action Status]&#40;https://img.shields.io/github/workflow/status/pentangle/backpack-monitored-scheduled-tasks/Check%20&%20fix%20styling?label=code%20style&#41;]&#40;https://github.com/pentangle/backpack-monitored-scheduled-tasks/actions?query=workflow%3A"Check+%26+fix+styling"+branch%3Amain&#41;)
+[![Total Downloads](https://img.shields.io/packagist/dt/pentangle/backpack-monitored-scheduled-tasks.svg?style=flat-square)](https://packagist.org/packages/pentangle/backpack-monitored-scheduled-tasks)
+
 ---
 
 This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
@@ -30,57 +24,101 @@ We highly appreciate you sending us a postcard from your hometown, mentioning wh
 You can install the package via composer:
 
 ```bash
-composer require vendor_slug/package_slug
+composer require pentangle/backpack-monitored-scheduled-tasks
+```
+
+Add menu item to sidebar:
+
+```bash
+php artisan backpack:add-sidebar-content "<li class='nav-item'><a class='nav-link' href='{{ backpack_url('monitored-scheduled-task') }}'><i class='nav-icon la la-tachometer'></i> Monitored scheduled tasks</a></li>"
 ```
 
 You can publish and run the migrations with:
 
 ```bash
-php artisan vendor:publish --provider="Pentangle\BackpackMonitoredScheduledTasks\BackpackMonitoredScheduledTasksServiceProvider" --tag="package_slug-migrations"
+php artisan vendor:publish --provider="Spatie\ScheduleMonitor\ScheduleMonitorServiceProvider" --tag="schedule-monitor-migrations"
 php artisan migrate
 ```
 
 You can publish the config file with:
 ```bash
-php artisan vendor:publish --provider="Pentangle\BackpackMonitoredScheduledTasks\BackpackMonitoredScheduledTasksServiceProvider" --tag="package_slug-config"
+php artisan vendor:publish --provider="Pentangle\BackpackMonitoredScheduledTasks\AddonServiceProvider" --tag="backpack-monitored-scheduled-tasks-config"
 ```
 
 This is the contents of the published config file:
 
 ```php
 return [
+    /*
+     * The schedule monitor will log each start, finish and failure of all scheduled jobs.
+     * After a while the `monitored_scheduled_task_log_items` might become big.
+     * Here you can specify the amount of days log items should be kept.
+     */
+    'delete_log_items_older_than_days' => 30,
+
+    /*
+     * The date format used for all dates displayed on the output of commands
+     * provided by this package.
+     */
+    'date_format' => 'd-m-Y H:i:s',
+
+    'models' => [
+        /*
+         * The model you want to use as a MonitoredScheduledTask model needs to extend the
+         * `Spatie\ScheduleMonitor\Models\MonitoredScheduledTask` Model.
+         */
+        'monitored_scheduled_task' => \Pentangle\BackpackMonitoredScheduledTasks\Models\MonitoredScheduledTask::class,
+
+        /*
+         * The model you want to use as a MonitoredScheduledTaskLogItem model needs to extend the
+         * `Spatie\ScheduleMonitor\Models\MonitoredScheduledTaskLogItem` Model.
+         */
+        'monitored_scheduled_log_item' => Spatie\ScheduleMonitor\Models\MonitoredScheduledTaskLogItem::class,
+    ],
+
+    /*
+     * Oh Dear can notify you via Mail, Slack, SMS, web hooks, ... when a
+     * scheduled task does not run on time.
+     *
+     * More info: https://ohdear.app/cron-checks
+     */
+    'oh_dear' => [
+        /*
+         * You can generate an API token at the Oh Dear user settings screen
+         *
+         * https://ohdear.app/user/api-tokens
+         */
+        'api_token' => env('OH_DEAR_API_TOKEN', ''),
+
+        /*
+         *  The id of the site you want to sync the schedule with.
+         *
+         * You'll find this id on the settings page of a site at Oh Dear.
+         */
+        'site_id' => env('OH_DEAR_SITE_ID'),
+
+        /*
+         * To keep scheduled jobs as short as possible, Oh Dear will be pinged
+         * via a queued job. Here you can specify the name of the queue you wish to use.
+         */
+        'queue' => env('OH_DEAR_QUEUE'),
+    ],
 ];
 ```
 
-## Usage
+[comment]: <> (## Usage)
 
-```php
-$skeleton = new Pentangle\BackpackMonitoredScheduledTasks();
-echo $skeleton->echoPhrase('Hello, Spatie!');
-```
-
-## Testing
+[comment]: <> (## Testing)
 
 ```bash
 composer test
 ```
 
-## Changelog
-
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
-
-## Contributing
-
-Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
-
-## Security Vulnerabilities
-
-Please review [our security policy](../../security/policy) on how to report security vulnerabilities.
-
 ## Credits
 
 - [Séan Poynter-Smith](https://github.com/Pentangle)
-- [All Contributors](../../contributors)
+
+[comment]: <> (- [All Contributors]&#40;../../contributors&#41;)
 
 ## License
 
